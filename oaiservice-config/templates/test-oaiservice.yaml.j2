@@ -31,7 +31,7 @@ topology_template:
     m1.small:
       type: tosca.nodes.Flavor
 
-    trusty-server-multi-nic:
+    oai:
       type: tosca.nodes.Image
 
 # private network template, created in fixtures.yml
@@ -96,14 +96,14 @@ topology_template:
         - management:
             node: management
             relationship: tosca.relationships.ConnectsToNetwork
-        # - public:
-        #     node: public
-        #     relationship: tosca.relationships.ConnectsToNetwork
+        - public:
+            node: public
+            relationship: tosca.relationships.ConnectsToNetwork
         - oaiserver:
             node: service#oaiservice
             relationship: tosca.relationships.MemberOfService
         - image:
-            node: trusty-server-multi-nic
+            node: oai
             relationship: tosca.relationships.DefaultImage
         - default_flavor:
             node: m1.small
@@ -124,10 +124,10 @@ topology_template:
       artifacts:
         pubkey: /opt/cord_profile/key_import/oaiservice_rsa.pub
 
-    tenant#oaitenant1:
+    tenant#oaitenant_vmme:
       type: tosca.nodes.OAIServiceInstance
       properties:
-        tenant_message: world
+        tenant_message: MME
       requirements:
         - tenant:
             node: service#oaiservice
@@ -136,3 +136,26 @@ topology_template:
             node: {{ site_name }}_oaiservice
             relationship: tosca.relationships.DependsOn
 
+    tenant#oaitenant_vhss:
+      type: tosca.nodes.OAIServiceInstance
+      properties:
+        tenant_message: HSS
+      requirements:
+        - tenant:
+            node: service#oaiservice
+            relationship: tosca.relationships.TenantOfService
+        - dependency:
+            node: {{ site_name }}_oaiservice
+            relationship: tosca.relationships.DependsOn
+
+    tenant#oaitenant_vspgw:
+      type: tosca.nodes.OAIServiceInstance
+      properties:
+        tenant_message: SPGW
+      requirements:
+        - tenant:
+            node: service#oaiservice
+            relationship: tosca.relationships.TenantOfService
+        - dependency:
+            node: {{ site_name }}_oaiservice
+            relationship: tosca.relationships.DependsOn
